@@ -491,6 +491,66 @@
     .error-message.active {
       display: block;
     }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      color: #6b7280;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      color: #374151;
+    }
+
+    .tab.active {
+      color: #2563eb;
+      border-bottom-color: #2563eb;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .distill-textarea {
+      min-height: 200px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .distill-hint {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .distill-btn {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .distilling {
+      opacity: 0.6;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -542,30 +602,77 @@
   <div class="modal" id="manual-entry-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div class="modal-title">Add Manual Entry</div>
+        <div class="modal-title">Add Activity</div>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Type</label>
-          <select class="form-select" id="manual-type">
-            <option value="meeting">Meeting</option>
-            <option value="doc_edit">Document Work</option>
-            <option value="decision">Decision</option>
-            <option value="task">Task/Action Item</option>
-            <option value="other">Other</option>
-          </select>
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-tab="manual">Manual Entry</button>
+          <button class="tab" data-tab="distill">Quick Distill</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Title/Summary</label>
-          <input type="text" class="form-input" id="manual-title" placeholder="Brief description">
+
+        <!-- Manual Entry Tab -->
+        <div class="tab-content active" id="manual-tab">
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-select" id="manual-type">
+              <option value="meeting">Meeting</option>
+              <option value="doc_edit">Document Work</option>
+              <option value="decision">Decision</option>
+              <option value="task">Task/Action Item</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Title/Summary</label>
+            <input type="text" class="form-input" id="manual-title" placeholder="Brief description">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Details</label>
+            <textarea class="form-textarea" id="manual-details" placeholder="Additional notes, outcomes, or context"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">When</label>
+            <input type="datetime-local" class="form-input" id="manual-timestamp">
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Details</label>
-          <textarea class="form-textarea" id="manual-details" placeholder="Additional notes, outcomes, or context"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">When</label>
-          <input type="datetime-local" class="form-input" id="manual-timestamp">
+
+        <!-- Quick Distill Tab -->
+        <div class="tab-content" id="distill-tab">
+          <div class="form-group">
+            <label class="form-label">Paste Conversation</label>
+            <textarea class="form-textarea distill-textarea" id="distill-content" placeholder="Paste your Teams chat, Slack thread, or any conversation here..."></textarea>
+            <div class="distill-hint">
+              💡 Paste a conversation and AI will extract the key points, decisions, and action items for you.
+            </div>
+          </div>
+          <button class="btn btn-primary distill-btn" id="distill-btn">✨ Distill with AI</button>
+
+          <!-- Distilled Result (hidden until processed) -->
+          <div id="distilled-result" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-select" id="distill-type">
+                <option value="meeting">Meeting</option>
+                <option value="doc_edit">Document Work</option>
+                <option value="decision">Decision</option>
+                <option value="task">Task/Action Item</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Title/Summary</label>
+              <input type="text" class="form-input" id="distill-title" placeholder="Brief description">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Details</label>
+              <textarea class="form-textarea" id="distill-details" placeholder="Additional notes, outcomes, or context"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">When</label>
+              <input type="datetime-local" class="form-input" id="distill-timestamp">
+            </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

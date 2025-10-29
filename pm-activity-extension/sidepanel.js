@@ -6,6 +6,7 @@ let activities = [];
 let editingId = null;
 let currentContext = null;
 let currentFilename = null;
+let currentTab = 'manual'; // 'manual' or 'distill'
 
 // DOM Elements
 const feedContainer = document.getElementById('activities-container');
@@ -27,6 +28,15 @@ const manualDetails = document.getElementById('manual-details');
 const manualTimestamp = document.getElementById('manual-timestamp');
 const manualSaveBtn = document.getElementById('manual-save');
 const manualCancelBtn = document.getElementById('manual-cancel');
+
+// Quick Distill Elements
+const distillContent = document.getElementById('distill-content');
+const distillBtn = document.getElementById('distill-btn');
+const distilledResult = document.getElementById('distilled-result');
+const distillType = document.getElementById('distill-type');
+const distillTitle = document.getElementById('distill-title');
+const distillDetails = document.getElementById('distill-details');
+const distillTimestamp = document.getElementById('distill-timestamp');
 
 // Synthesis Modal
 const synthesisModal = document.getElementById('synthesis-modal');
@@ -66,6 +76,14 @@ function setupEventListeners() {
 
   synthesisExportBtn.addEventListener('click', exportContext);
   synthesisCancelBtn.addEventListener('click', hideSynthesisModal);
+
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+
+  // Distill button
+  distillBtn.addEventListener('click', distillConversation);
 
   // Close modals on escape
   document.addEventListener('keydown', (e) => {
@@ -391,14 +409,26 @@ async function deleteActivity(id) {
 
 // Show manual entry modal
 function showManualEntryModal() {
+  // Reset to manual tab
+  switchTab('manual');
+
   // Set default timestamp to now
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   manualTimestamp.value = now.toISOString().slice(0, 16);
+  distillTimestamp.value = now.toISOString().slice(0, 16);
 
+  // Reset manual fields
   manualType.value = 'meeting';
   manualTitle.value = '';
   manualDetails.value = '';
+
+  // Reset distill fields
+  distillContent.value = '';
+  distilledResult.style.display = 'none';
+  distillType.value = 'meeting';
+  distillTitle.value = '';
+  distillDetails.value = '';
 
   manualEntryModal.classList.add('active');
   manualTitle.focus();
@@ -409,12 +439,141 @@ function hideManualEntryModal() {
   manualEntryModal.classList.remove('active');
 }
 
+// Switch tabs in manual entry modal
+function switchTab(tabName) {
+  currentTab = tabName;
+
+  // Update tab buttons
+  document.querySelectorAll('.tab').forEach(tab => {
+    if (tab.dataset.tab === tabName) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Update tab content
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+
+  if (tabName === 'manual') {
+    document.getElementById('manual-tab').classList.add('active');
+  } else if (tabName === 'distill') {
+    document.getElementById('distill-tab').classList.add('active');
+  }
+}
+
+// Distill conversation using AI
+async function distillConversation() {
+  const content = distillContent.value.trim();
+
+  if (!content) {
+    alert('Please paste a conversation first');
+    return;
+  }
+
+  // Get API key
+  const response = await chrome.runtime.sendMessage({ type: 'GET_API_KEY' });
+  if (!response || !response.apiKey) {
+    alert('Please configure your Claude API key in the extension popup');
+    return;
+  }
+
+  // Show loading state
+  distillBtn.classList.add('distilling');
+  distillBtn.textContent = '⏳ Distilling...';
+
+  try {
+    // Call Claude API
+    const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': response.apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: `You are helping a PM distill a conversation into a structured activity entry.
+
+Conversation:
+${content}
+
+Extract and provide in JSON format:
+{
+  "type": "meeting" | "decision" | "task" | "other",
+  "title": "Brief 5-8 word summary",
+  "details": "2-3 sentences covering: key points, decisions made, action items, outcomes"
+}
+
+Focus on extracting actionable information. Be concise but capture the essence.`
+        }]
+      })
+    });
+
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json();
+      throw new Error(errorData.error?.message || 'API request failed');
+    }
+
+    const data = await apiResponse.json();
+    const resultText = data.content[0].text;
+
+    // Parse the JSON response
+    const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Could not parse AI response');
+    }
+
+    const distilled = JSON.parse(jsonMatch[0]);
+
+    // Populate the form
+    distillType.value = distilled.type || 'other';
+    distillTitle.value = distilled.title || '';
+    distillDetails.value = distilled.details || '';
+
+    // Show the result form
+    distilledResult.style.display = 'block';
+
+    // Scroll to result
+    distilledResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  } catch (error) {
+    console.error('[Side Panel] Distill error:', error);
+    alert('Failed to distill conversation: ' + error.message);
+  } finally {
+    // Reset button
+    distillBtn.classList.remove('distilling');
+    distillBtn.textContent = '✨ Distill with AI';
+  }
+}
+
 // Save manual entry
 async function saveManualEntry() {
-  const type = manualType.value;
-  const title = manualTitle.value.trim();
-  const details = manualDetails.value.trim();
-  const timestamp = new Date(manualTimestamp.value).toISOString();
+  let type, title, details, timestamp;
+
+  // Get values based on current tab
+  if (currentTab === 'manual') {
+    type = manualType.value;
+    title = manualTitle.value.trim();
+    details = manualDetails.value.trim();
+    timestamp = new Date(manualTimestamp.value).toISOString();
+  } else if (currentTab === 'distill') {
+    // Check if distilled result is shown
+    if (distilledResult.style.display === 'none') {
+      alert('Please distill the conversation first');
+      return;
+    }
+
+    type = distillType.value;
+    title = distillTitle.value.trim();
+    details = distillDetails.value.trim();
+    timestamp = new Date(distillTimestamp.value).toISOString();
+  }
 
   if (!title) {
     alert('Please enter a title');
