@@ -72,6 +72,24 @@ def log_activities(activities):
         return False, 0, str(e)
 
 
+def export_context(context, filename):
+    """Write synthesized context to ~/.pm-agent/context-updates/."""
+    pm_agent_dir = ensure_pm_agent_dir()
+    context_updates_dir = pm_agent_dir / 'context-updates'
+    context_updates_dir.mkdir(exist_ok=True)
+
+    context_file = context_updates_dir / filename
+
+    try:
+        with open(context_file, 'w') as f:
+            f.write(context)
+
+        return True, str(context_file), None
+
+    except Exception as e:
+        return False, None, str(e)
+
+
 def main():
     """Main loop for native messaging host."""
     # Log to a debug file for troubleshooting
@@ -109,6 +127,26 @@ def main():
 
                 with open(debug_file, 'a') as debug:
                     debug.write(f"[{datetime.now().isoformat()}] Logged {logged_count} activities\n")
+
+            elif message.get('action') == 'export_context':
+                context = message.get('context', '')
+                filename = message.get('filename', f'context-update-{datetime.now().strftime("%Y-%m-%d")}.md')
+
+                success, path, error = export_context(context, filename)
+
+                # Send response
+                response = {
+                    'success': success,
+                    'path': path
+                }
+
+                if error:
+                    response['error'] = error
+
+                send_message(response)
+
+                with open(debug_file, 'a') as debug:
+                    debug.write(f"[{datetime.now().isoformat()}] Exported context to {path}\n")
 
             else:
                 # Unknown action

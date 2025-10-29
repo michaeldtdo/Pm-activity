@@ -2,9 +2,32 @@
 
 A Chrome extension (Manifest V3) that automatically tracks your PM work activity across multiple tools and integrates with your local PM agent CLI system.
 
-## Current Status: Phase 1 - Core Activity Tracking
+## 🎉 Phase 2 Now Available!
 
-Phase 1 implements automatic activity tracking without content capture. Content capture with privacy controls will be added in Phase 2.
+**New Features:**
+- **Live Activity Staging**: Side panel showing all activities in real-time
+- **Manual Editing**: Review and enhance auto-captured activities
+- **Manual Entry**: Add offline meetings, decisions, and file work
+- **AI-Powered Synthesis**: Transform activities into structured context updates using Claude
+- **Export & Download**: Save and send context to your PM agent
+
+👉 **[See Phase 2 Documentation](README-PHASE2.md)** for complete details
+
+## Quick Start (Phase 2)
+
+1. **Install extension** (see installation section below)
+2. **Configure Claude API key** in extension popup
+3. **Open side panel**: Click extension icon → "Open Activity Panel" or `Ctrl+Shift+P`
+4. **Work normally** - activities auto-capture and appear in side panel
+5. **Add manual entries** for offline work
+6. **Process with AI** at end of day
+7. **Download & Export** context update to PM agent
+
+## Features Overview
+
+### Phase 1: Core Activity Tracking
+
+Automatic activity tracking without content capture.
 
 ## Features (Phase 1)
 

@@ -1,15 +1,12 @@
 // PM Activity Tracker - Popup UI Script
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const loading = document.getElementById('loading');
-  const content = document.getElementById('content');
-  const statusDiv = document.getElementById('status');
-  const todayCount = document.getElementById('today-count');
-  const totalCount = document.getElementById('total-count');
-  const bufferCount = document.getElementById('buffer-count');
-  const snippetsCount = document.getElementById('snippets-count');
-  const flushBtn = document.getElementById('flush-btn');
-  const clearBtn = document.getElementById('clear-btn');
+  const openPanelBtn = document.getElementById('open-panel-btn');
+  const apiKeyInput = document.getElementById('api-key-input');
+  const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+  const successMsg = document.getElementById('success-msg');
+  const statStaging = document.getElementById('stat-staging');
+  const statToday = document.getElementById('stat-today');
 
   // Load and display stats
   async function loadStats() {
@@ -18,102 +15,78 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (response && response.stats) {
         const stats = response.stats;
-
-        todayCount.textContent = stats.todayActivities || 0;
-        totalCount.textContent = stats.totalActivities || 0;
-        bufferCount.textContent = stats.bufferedActivities || 0;
-        snippetsCount.textContent = stats.contentSnippets || 0;
-
-        // Update status
-        updateStatus('success', 'Tracking active');
-      } else {
-        updateStatus('error', 'Failed to load stats');
+        statStaging.textContent = stats.stagingTotal || 0;
+        statToday.textContent = stats.todayActivities || 0;
       }
     } catch (error) {
       console.error('Error loading stats:', error);
-      updateStatus('error', 'Connection error');
     }
-
-    // Hide loading, show content
-    loading.style.display = 'none';
-    content.style.display = 'block';
   }
 
-  // Update status indicator
-  function updateStatus(type, message) {
-    statusDiv.className = type === 'error' ? 'status error' : 'status';
-    statusDiv.querySelector('.status-text').textContent = message;
-  }
-
-  // Flush buffer to native host
-  async function flushBuffer() {
-    flushBtn.disabled = true;
-    flushBtn.textContent = 'Flushing...';
-
+  // Load existing API key
+  async function loadApiKey() {
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'FLUSH_BUFFER' });
-
-      if (response && response.success) {
-        updateStatus('success', `Flushed ${response.logged || 0} events`);
-        setTimeout(() => {
-          updateStatus('success', 'Tracking active');
-        }, 2000);
-      } else {
-        updateStatus('error', response.error || 'Flush failed');
-        setTimeout(() => {
-          updateStatus('success', 'Tracking active');
-        }, 3000);
+      const response = await chrome.runtime.sendMessage({ type: 'GET_API_KEY' });
+      if (response && response.apiKey) {
+        apiKeyInput.value = response.apiKey;
       }
-
-      // Reload stats
-      await loadStats();
     } catch (error) {
-      console.error('Error flushing buffer:', error);
-      updateStatus('error', 'Flush error: ' + error.message);
-      setTimeout(() => {
-        updateStatus('success', 'Tracking active');
-      }, 3000);
-    } finally {
-      flushBtn.disabled = false;
-      flushBtn.textContent = 'Flush to PM Agent';
+      console.error('Error loading API key:', error);
     }
   }
 
-  // Clear all data
-  async function clearData() {
-    if (!confirm('Are you sure you want to clear all activity logs and snippets? This cannot be undone.')) {
+  // Open side panel
+  openPanelBtn.addEventListener('click', async () => {
+    try {
+      await chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+      window.close(); // Close popup after opening side panel
+    } catch (error) {
+      console.error('Error opening side panel:', error);
+      // Fallback for older Chrome versions
+      chrome.sidePanel.open().catch(() => {
+        alert('Side panel feature not available. Please update Chrome.');
+      });
+    }
+  });
+
+  // Save API key
+  saveApiKeyBtn.addEventListener('click', async () => {
+    const apiKey = apiKeyInput.value.trim();
+
+    if (!apiKey) {
+      showMessage('Please enter an API key', false);
       return;
     }
 
-    clearBtn.disabled = true;
-    clearBtn.textContent = 'Clearing...';
+    if (!apiKey.startsWith('sk-ant-')) {
+      showMessage('Invalid API key format', false);
+      return;
+    }
 
     try {
-      await chrome.runtime.sendMessage({ type: 'CLEAR_BUFFER' });
-      updateStatus('success', 'All data cleared');
+      await chrome.runtime.sendMessage({
+        type: 'SAVE_API_KEY',
+        apiKey
+      });
 
-      setTimeout(() => {
-        updateStatus('success', 'Tracking active');
-      }, 2000);
-
-      // Reload stats
-      await loadStats();
+      showMessage('API key saved successfully', true);
     } catch (error) {
-      console.error('Error clearing data:', error);
-      updateStatus('error', 'Clear failed');
-    } finally {
-      clearBtn.disabled = false;
-      clearBtn.textContent = 'Clear All Data';
+      console.error('Error saving API key:', error);
+      showMessage('Failed to save API key', false);
     }
+  });
+
+  // Show message
+  function showMessage(message, isSuccess) {
+    successMsg.textContent = message;
+    successMsg.className = isSuccess ? 'success-message active' : 'error-message active';
+
+    setTimeout(() => {
+      successMsg.classList.remove('active');
+    }, 3000);
   }
 
-  // Event listeners
-  flushBtn.addEventListener('click', flushBuffer);
-  clearBtn.addEventListener('click', clearData);
-
-  // Initial load
+  // Initialize
   await loadStats();
-
-  // Auto-refresh stats every 5 seconds
-  setInterval(loadStats, 5000);
+  await loadApiKey();
 });

@@ -14,38 +14,10 @@
     }
 
     h1 {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
       margin: 0 0 16px 0;
       color: #202124;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .stat-card {
-      background: white;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .stat-value {
-      font-size: 24px;
-      font-weight: 600;
-      color: #1a73e8;
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: #5f6368;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     .section {
@@ -67,7 +39,7 @@
 
     button {
       width: 100%;
-      padding: 10px 16px;
+      padding: 12px 16px;
       border: none;
       border-radius: 6px;
       font-size: 14px;
@@ -82,12 +54,12 @@
     }
 
     .btn-primary {
-      background: #1a73e8;
+      background: #2563eb;
       color: white;
     }
 
     .btn-primary:hover {
-      background: #1557b0;
+      background: #1d4ed8;
     }
 
     .btn-secondary {
@@ -99,109 +71,126 @@
       background: #d2e3fc;
     }
 
-    .btn-danger {
-      background: #fce8e6;
-      color: #d93025;
-    }
-
-    .btn-danger:hover {
-      background: #f6aea9;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px;
-      background: #e8f5e9;
-      border-radius: 6px;
+    .form-group {
       margin-bottom: 12px;
     }
 
-    .status-indicator {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #34a853;
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
     }
 
-    .status-text {
+    .form-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
       font-size: 13px;
-      color: #137333;
+      font-family: inherit;
+    }
+
+    .form-hint {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card {
+      background: #f9fafb;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a73e8;
+      margin-bottom: 2px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: #5f6368;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .success-message {
+      padding: 8px;
+      background: #d1fae5;
+      color: #065f46;
+      border-radius: 4px;
+      font-size: 12px;
       font-weight: 500;
+      margin-bottom: 12px;
+      display: none;
     }
 
-    .status.error {
-      background: #fce8e6;
-    }
-
-    .status.error .status-indicator {
-      background: #d93025;
-    }
-
-    .status.error .status-text {
-      color: #d93025;
+    .success-message.active {
+      display: block;
     }
 
     .info-text {
       font-size: 12px;
-      color: #5f6368;
+      color: #6b7280;
       line-height: 1.5;
       margin-bottom: 8px;
     }
 
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #5f6368;
+    .shortcut {
+      font-family: 'Courier New', monospace;
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
     }
   </style>
 </head>
 <body>
   <h1>PM Activity Tracker</h1>
 
-  <div id="loading" class="loading">
-    Loading...
-  </div>
+  <div id="success-msg" class="success-message"></div>
 
-  <div id="content" style="display: none;">
-    <div id="status" class="status">
-      <div class="status-indicator"></div>
-      <div class="status-text">Tracking active</div>
-    </div>
-
+  <div class="section">
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-value" id="today-count">0</div>
+        <div class="stat-value" id="stat-staging">0</div>
+        <div class="stat-label">Staging</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-today">0</div>
         <div class="stat-label">Today</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="total-count">0</div>
-        <div class="stat-label">Total</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="buffer-count">0</div>
-        <div class="stat-label">Buffered</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="snippets-count">0</div>
-        <div class="stat-label">Snippets</div>
-      </div>
     </div>
-
-    <div class="section">
-      <div class="section-title">Actions</div>
-      <button id="flush-btn" class="btn-primary">Flush to PM Agent</button>
-      <button id="clear-btn" class="btn-danger">Clear All Data</button>
+    <button id="open-panel-btn" class="btn-primary">📋 Open Activity Panel</button>
+    <div class="info-text" style="margin-top: 8px;">
+      <span class="shortcut">Ctrl+Shift+P</span> to open panel
     </div>
+  </div>
 
-    <div class="section">
-      <div class="info-text">
-        <strong>Phase 1:</strong> Activity tracking is active. Content capture will be available in Phase 2.
-      </div>
-      <div class="info-text">
-        Activity logs are buffered and sent to ~/.pm-agent/activity.jsonl every 10 events or 5 minutes.
-      </div>
+  <div class="section">
+    <div class="section-title">Claude API Key</div>
+    <div class="form-group">
+      <input type="password" id="api-key-input" class="form-input" placeholder="sk-ant-api03-...">
+      <div class="form-hint">Required for AI-powered context synthesis</div>
+    </div>
+    <button id="save-api-key-btn" class="btn-secondary">Save API Key</button>
+  </div>
+
+  <div class="section">
+    <div class="info-text">
+      <strong>Phase 2:</strong> Live activity staging, manual editing, and AI synthesis are now available!
     </div>
   </div>
 
