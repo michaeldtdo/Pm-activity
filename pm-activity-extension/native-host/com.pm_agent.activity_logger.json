@@ -1,0 +1,9 @@
+{
+  "name": "com.pm_agent.activity_logger",
+  "description": "PM Activity Logger - Writes activity logs to ~/.pm-agent/activity.jsonl",
+  "path": "PLACEHOLDER_PATH/pm_activity_logger.py",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://EXTENSION_ID_PLACEHOLDER/"
+  ]
+}

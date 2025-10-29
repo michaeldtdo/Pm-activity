@@ -1,0 +1,16 @@
+{"timestamp":"2025-10-29T09:15:23.456Z","type":"doc_open","tool":"google_docs","doc_id":"1a2b3c4d5e6f7g8h9i0j","doc_title":"Product Roadmap Q4 2025","tab_id":12345,"tab_url":"https://docs.google.com/document/d/1a2b3c4d5e6f7g8h9i0j/edit"}
+{"timestamp":"2025-10-29T09:16:45.789Z","type":"doc_edit","tool":"google_docs","doc_id":"1a2b3c4d5e6f7g8h9i0j","doc_title":"Product Roadmap Q4 2025","duration_seconds":82,"tab_id":12345}
+{"timestamp":"2025-10-29T09:25:12.345Z","type":"slack_channel_view","tool":"slack","workspace":"mycompany","channel":"product-team","channel_id":"C01234ABCD","tab_id":12346,"tab_url":"https://mycompany.slack.com/archives/C01234ABCD"}
+{"timestamp":"2025-10-29T09:27:33.678Z","type":"slack_message","tool":"slack","workspace":"mycompany","channel":"product-team","channel_id":"C01234ABCD","message_count":1,"tab_id":12346}
+{"timestamp":"2025-10-29T10:00:00.000Z","type":"teams_meeting_join","tool":"teams","meeting_title":"Bank Connect Planning","chat_name":"Product Team","chat_id":"19:abc123def456@thread.tacv2","tab_id":12347,"tab_url":"https://teams.microsoft.com/..."}
+{"timestamp":"2025-10-29T10:45:30.123Z","type":"teams_meeting_end","tool":"teams","meeting_title":"Bank Connect Planning","duration_seconds":2730,"chat_name":"Product Team","chat_id":"19:abc123def456@thread.tacv2","tab_id":12347}
+{"timestamp":"2025-10-29T11:15:00.000Z","type":"jira_issue_view","tool":"jira","issue_key":"BANK-456","issue_summary":"Implement Bank Connect OAuth flow","project_name":"Bank Integration","tab_id":12348,"tab_url":"https://mycompany.atlassian.net/browse/BANK-456"}
+{"timestamp":"2025-10-29T11:20:15.456Z","type":"jira_issue_update","tool":"jira","issue_key":"BANK-456","issue_summary":"Implement Bank Connect OAuth flow","update_type":"status_change","tab_id":12348}
+{"timestamp":"2025-10-29T13:30:00.000Z","type":"claude_conversation_start","tool":"claude","chat_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","tab_id":12349,"tab_url":"https://claude.ai/chat/a1b2c3d4-e5f6-7890-abcd-ef1234567890"}
+{"timestamp":"2025-10-29T13:30:15.789Z","type":"claude_user_message","tool":"claude","chat_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","tab_id":12349}
+{"timestamp":"2025-10-29T13:30:45.234Z","type":"claude_response","tool":"claude","chat_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","tab_id":12349}
+{"timestamp":"2025-10-29T14:00:30.567Z","type":"doc_close","tool":"google_docs","doc_id":"1a2b3c4d5e6f7g8h9i0j","doc_title":"Product Roadmap Q4 2025","total_edit_duration_seconds":245,"tab_id":12345}
+{"timestamp":"2025-10-29T14:15:00.000Z","type":"teams_chat_view","tool":"teams","chat_name":"Engineering Leads","chat_id":"19:xyz789abc123@thread.tacv2","tab_id":12350,"tab_url":"https://teams.microsoft.com/..."}
+{"timestamp":"2025-10-29T14:16:30.123Z","type":"teams_message_sent","tool":"teams","chat_name":"Engineering Leads","chat_id":"19:xyz789abc123@thread.tacv2","message_count":1,"tab_id":12350}
+{"timestamp":"2025-10-29T15:00:00.000Z","type":"slack_channel_view","tool":"slack","workspace":"mycompany","channel":"bank-connect","channel_id":"C56789WXYZ","tab_id":12346,"tab_url":"https://mycompany.slack.com/archives/C56789WXYZ"}
+{"timestamp":"2025-10-29T15:05:45.678Z","type":"slack_message","tool":"slack","workspace":"mycompany","channel":"bank-connect","channel_id":"C56789WXYZ","message_count":2,"tab_id":12346}
