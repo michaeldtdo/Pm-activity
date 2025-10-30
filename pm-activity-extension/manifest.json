@@ -1,20 +1,18 @@
 {
   "manifest_version": 3,
   "name": "PM Activity Tracker",
-  "version": "2.0.0",
-  "description": "Track PM work activity with live staging, manual editing, and AI-powered context synthesis",
+  "version": "2.1.0",
+  "description": "Track PM work activity with AI-powered auto-card generation, live staging, and context synthesis",
   "permissions": [
     "storage",
     "tabs",
+    "activeTab",
     "nativeMessaging",
     "sidePanel"
   ],
   "host_permissions": [
-    "https://docs.google.com/*",
-    "https://*.slack.com/*",
-    "https://*.atlassian.net/*",
-    "https://teams.microsoft.com/*",
-    "https://claude.ai/*"
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -44,6 +42,12 @@
       "matches": ["https://claude.ai/*"],
       "js": ["content/claude.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content/activity-observer.js"],
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {

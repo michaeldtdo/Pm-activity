@@ -252,6 +252,22 @@
     .status-badge.edited { background: #fef3c7; color: #92400e; }
     .status-badge.processed { background: #d1fae5; color: #065f46; }
 
+    .auto-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .activity-card.auto-generated {
+      border-left-width: 4px;
+      border-left-style: solid;
+      border-image: linear-gradient(180deg, #667eea 0%, #764ba2 100%) 1;
+    }
+
     .activity-content {
       margin-bottom: 8px;
     }
@@ -271,6 +287,41 @@
       font-size: 13px;
       color: #6b7280;
       line-height: 1.5;
+    }
+
+    .activity-summary {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.6;
+      margin-top: 8px;
+      padding: 8px;
+      background: #f0f9ff;
+      border-left: 3px solid #0ea5e9;
+      border-radius: 4px;
+    }
+
+    .activity-key-points {
+      margin-top: 8px;
+      padding: 8px 8px 8px 12px;
+      background: #fefce8;
+      border-left: 3px solid #eab308;
+      border-radius: 4px;
+    }
+
+    .activity-key-points ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .activity-key-points li {
+      font-size: 12px;
+      color: #713f12;
+      line-height: 1.6;
+      margin-bottom: 4px;
+    }
+
+    .activity-key-points li:last-child {
+      margin-bottom: 0;
     }
 
     .activity-snippet {
