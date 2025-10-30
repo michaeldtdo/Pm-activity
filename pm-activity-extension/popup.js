@@ -38,14 +38,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Open side panel
   openPanelBtn.addEventListener('click', async () => {
     try {
-      await chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT });
+      // Check if sidePanel API exists
+      if (!chrome.sidePanel) {
+        alert('Side Panel not supported. Please update Chrome to version 114 or higher.\n\nCurrent version: ' + (navigator.userAgent.match(/Chrome\/(\d+)/)?.[1] || 'unknown'));
+        return;
+      }
+
+      // Try to get current window
+      const windows = await chrome.windows.getCurrent();
+      await chrome.sidePanel.open({ windowId: windows.id });
       window.close(); // Close popup after opening side panel
     } catch (error) {
       console.error('Error opening side panel:', error);
-      // Fallback for older Chrome versions
-      chrome.sidePanel.open().catch(() => {
-        alert('Side panel feature not available. Please update Chrome.');
-      });
+
+      // Try fallback without windowId
+      try {
+        await chrome.sidePanel.open();
+        window.close();
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        alert('Failed to open side panel.\n\nError: ' + error.message + '\n\nPlease try:\n1. Update Chrome to latest version\n2. Reload the extension (chrome://extensions)\n3. Use keyboard shortcut: Ctrl+Shift+P');
+      }
     }
   });
 
