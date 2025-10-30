@@ -58,16 +58,96 @@ Replace `EXTENSION_ID_PLACEHOLDER` with the ID you copied in step 2.
 
 Save and exit (Ctrl+X, Y, Enter).
 
-### 4. Create Native Host Symlink
+### 4. Register Native Host
 
-**On Linux:**
+The process differs by operating system:
+
+#### Windows (PC)
+
+**Windows uses the Registry instead of symlinks.**
+
+1. **Create the directory structure:**
+   ```cmd
+   mkdir %USERPROFILE%\.pm-agent\native-host
+   ```
+
+2. **Copy the Python script:**
+   Copy `pm_activity_logger.py` to `%USERPROFILE%\.pm-agent\native-host\`
+
+3. **Update the manifest path:**
+   Edit `com.pm_agent.activity_logger.json` and change the path to Windows format:
+   ```json
+   {
+     "name": "com.pm_agent.activity_logger",
+     "description": "PM Activity Logger",
+     "path": "C:\\Users\\YourUsername\\.pm-agent\\native-host\\pm_activity_logger.py",
+     "type": "stdio",
+     "allowed_origins": [
+       "chrome-extension://YOUR_EXTENSION_ID/"
+     ]
+   }
+   ```
+   Replace `YourUsername` with your actual Windows username.
+
+4. **Add to Windows Registry:**
+
+   **Option A - Using Command Line (Recommended):**
+
+   Open Command Prompt as Administrator and run:
+   ```cmd
+   REG ADD "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.pm_agent.activity_logger" /ve /t REG_SZ /d "%USERPROFILE%\.pm-agent\native-host\com.pm_agent.activity_logger.json" /f
+   ```
+
+   **Option B - Using Registry Editor:**
+
+   a. Press `Win+R`, type `regedit`, press Enter
+
+   b. Navigate to: `HKEY_CURRENT_USER\Software\Google\Chrome\NativeMessagingHosts`
+
+   c. Right-click `NativeMessagingHosts` → New → Key
+
+   d. Name it: `com.pm_agent.activity_logger`
+
+   e. Right-click the new key → Modify → Set value to:
+   ```
+   C:\Users\YourUsername\.pm-agent\native-host\com.pm_agent.activity_logger.json
+   ```
+
+5. **Ensure Python is in PATH:**
+
+   Test that Python works:
+   ```cmd
+   python --version
+   ```
+
+   If Python is not found, either:
+   - Add Python to your PATH environment variable, OR
+   - Create a batch file wrapper (see below)
+
+**Python Batch Wrapper (if Python not in PATH):**
+
+If Python isn't in your PATH, create `pm_activity_logger.bat` in the same directory:
+
+```batch
+@echo off
+"C:\Python39\python.exe" "%~dp0pm_activity_logger.py"
+```
+
+Then update the manifest to point to the `.bat` file instead:
+```json
+"path": "C:\\Users\\YourUsername\\.pm-agent\\native-host\\pm_activity_logger.bat"
+```
+
+#### Linux
+
 ```bash
 mkdir -p ~/.config/google-chrome/NativeMessagingHosts
 ln -sf ~/.pm-agent/native-host/com.pm_agent.activity_logger.json \
   ~/.config/google-chrome/NativeMessagingHosts/com.pm_agent.activity_logger.json
 ```
 
-**On macOS:**
+#### macOS
+
 ```bash
 mkdir -p ~/Library/Application\ Support/Google/Chrome/NativeMessagingHosts
 ln -sf ~/.pm-agent/native-host/com.pm_agent.activity_logger.json \
@@ -112,6 +192,36 @@ You should see JSON lines with your activity!
 
 ### "Native host not found" error when flushing
 
+**On Windows:**
+
+1. Verify Registry entry:
+   ```cmd
+   REG QUERY "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.pm_agent.activity_logger"
+   ```
+   Should show the path to your manifest JSON file.
+
+2. Check manifest file exists:
+   ```cmd
+   type %USERPROFILE%\.pm-agent\native-host\com.pm_agent.activity_logger.json
+   ```
+
+3. Verify Extension ID matches in manifest
+
+4. Test Python script:
+   ```cmd
+   python %USERPROFILE%\.pm-agent\native-host\pm_activity_logger.py
+   ```
+   Should wait for input (Ctrl+C to exit)
+
+5. Check Windows paths use double backslashes:
+   ```json
+   "path": "C:\\Users\\YourName\\.pm-agent\\native-host\\pm_activity_logger.py"
+   ```
+
+6. Restart Chrome completely
+
+**On Linux/macOS:**
+
 1. Verify symlink:
    ```bash
    ls -la ~/.config/google-chrome/NativeMessagingHosts/  # Linux
@@ -131,6 +241,26 @@ You should see JSON lines with your activity!
 4. Restart Chrome completely
 
 ### No activities appearing in activity.jsonl
+
+**On Windows:**
+
+1. Check debug log:
+   ```cmd
+   type %USERPROFILE%\.pm-agent\native_host_debug.log
+   ```
+
+2. Check if activity file was created:
+   ```cmd
+   type %USERPROFILE%\.pm-agent\activity.jsonl
+   ```
+
+3. Check Chrome extension console for errors:
+   - Go to `chrome://extensions`
+   - Click "Details" on PM Activity Tracker
+   - Click "Inspect views: service worker"
+   - Check Console for errors
+
+**On Linux/macOS:**
 
 1. Check debug log:
    ```bash
