@@ -49,6 +49,16 @@ chrome.runtime.onInstalled.addListener(async () => {
     await chrome.storage.local.set({ archive: [] });
   }
 
+  // Enable side panel for all tabs
+  if (chrome.sidePanel) {
+    try {
+      await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+      console.log('[PM Activity] Side panel configured');
+    } catch (error) {
+      console.error('[PM Activity] Error configuring side panel:', error);
+    }
+  }
+
   startFlushTimer();
 });
 
@@ -655,6 +665,17 @@ chrome.storage.local.get('stagingActivities').then(({ stagingActivities: stored 
     console.log(`[PM Activity] Loaded ${stagingActivities.length} staging activities`);
   }
 });
+
+// Configure side panel on startup
+if (chrome.sidePanel) {
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false })
+    .then(() => {
+      console.log('[PM Activity] Side panel configured on startup');
+    })
+    .catch(error => {
+      console.error('[PM Activity] Error configuring side panel on startup:', error);
+    });
+}
 
 // Start the flush timer on load
 startFlushTimer();
