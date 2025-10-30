@@ -7,6 +7,7 @@ Phase 2 transforms the PM Activity Tracker from a simple logger into an intellig
 - **Live Activity Staging**: See all activities in a side panel as they happen
 - **Manual Editing**: Review, edit, and enhance auto-captured activities
 - **Manual Entry**: Fill gaps with offline meetings, file work, and decisions
+- **Quick Distill**: Paste conversations and let AI extract key information (NEW!)
 - **AI-Powered Synthesis**: Transform raw activities into structured context updates using Claude
 - **Export & Download**: Save context updates locally and send to PM agent
 
@@ -14,9 +15,9 @@ Phase 2 transforms the PM Activity Tracker from a simple logger into an intellig
 
 ```
 1. Work across tools → 2. Activities appear in side panel →
-3. Review/edit/add entries → 4. Click "Process with AI" →
-5. Review generated context → 6. Download & Export →
-7. Context sent to PM agent
+3. Review/edit/add entries (or paste conversations via Quick Distill) →
+4. Click "Process with AI" → 5. Review generated context →
+6. Download & Export → 7. Context sent to PM agent
 ```
 
 ## New Features
@@ -73,6 +74,66 @@ Phase 2 transforms the PM Activity Tracker from a simple logger into an intellig
 - Decisions made in person
 - Tasks or action items identified
 - Context that wasn't auto-captured
+
+### 3.5. Quick Distill (NEW!)
+
+**Paste conversations and let AI extract the key information automatically.**
+
+Instead of manually typing summaries, paste any conversation (Teams chat, Slack thread, email, etc.) and AI will distill it into a structured activity for you.
+
+**How to use:**
+1. Click **"Add Manual Entry"** card
+2. Switch to **"Quick Distill"** tab
+3. Paste your conversation in the textarea:
+   ```
+   Sarah: What are we thinking for Bank Connect launch?
+   John: Need more time for partnerships. Nov 15?
+   Sarah: Agreed. Can you update stakeholders?
+   John: Will do.
+   ```
+4. Click **"✨ Distill with AI"**
+5. AI extracts and populates:
+   - **Type**: Automatically categorized (meeting/decision/task/other)
+   - **Title**: Concise 5-8 word summary
+   - **Details**: Key points, decisions, and action items in 2-3 sentences
+6. Review and edit the extracted information
+7. Click **"Save"** to create activity card
+
+**What the AI extracts:**
+```
+Type: decision
+Title: Bank Connect Launch Date Discussion
+Details: Decided to move Bank Connect launch to Nov 15 to allow time for
+partnership finalization. John will update stakeholders today.
+```
+
+**Works with any conversation:**
+- Teams chats
+- Slack threads
+- Email discussions
+- Meeting notes from other tools
+- WhatsApp/text messages
+- Any copied text conversation
+
+**Benefits:**
+- ⏱️ **Saves time**: No manual summarization needed
+- 🎯 **Captures everything**: AI won't miss buried decisions or action items
+- 📝 **Consistent format**: Structured extraction every time
+- ✏️ **Editable**: Review and adjust before saving
+- 🔄 **Pre-layer**: Distills BEFORE becoming an activity card
+
+**Example workflow:**
+```
+[Copy Teams conversation]
+    ↓
+[Paste in Quick Distill]
+    ↓
+[Click "Distill with AI"]
+    ↓
+[Review extracted summary]
+    ↓
+[Save as activity card]
+```
 
 ### 4. AI-Powered Context Synthesis
 
@@ -466,6 +527,23 @@ When: 11:00 AM
 Auto-captured:
 💬 Slack: #product channel
 8 messages sent
+```
+
+**3:00 PM** - Quick Distill a Teams conversation
+```
+[Paste conversation in Quick Distill tab]
+Sarah: What about the API timeline?
+John: We can have basic endpoints ready in 2 weeks.
+Sarah: That works. Let's prioritize auth and data sync first.
+John: Agreed. I'll create the stories.
+
+[Click "Distill with AI"]
+
+AI extracts:
+Type: task
+Title: State Digital API Development Timeline
+Details: John will have basic endpoints ready in 2 weeks. Prioritizing auth and
+data sync endpoints first. John creating Jira stories.
 ```
 
 **4:00 PM** - Add manual decision

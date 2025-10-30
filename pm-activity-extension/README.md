@@ -8,6 +8,7 @@ A Chrome extension (Manifest V3) that automatically tracks your PM work activity
 - **Live Activity Staging**: Side panel showing all activities in real-time
 - **Manual Editing**: Review and enhance auto-captured activities
 - **Manual Entry**: Add offline meetings, decisions, and file work
+- **Quick Distill**: Paste conversations and let AI extract key information
 - **AI-Powered Synthesis**: Transform activities into structured context updates using Claude
 - **Export & Download**: Save and send context to your PM agent
 
@@ -19,7 +20,7 @@ A Chrome extension (Manifest V3) that automatically tracks your PM work activity
 2. **Configure Claude API key** in extension popup
 3. **Open side panel**: Click extension icon → "Open Activity Panel" or `Ctrl+Shift+P`
 4. **Work normally** - activities auto-capture and appear in side panel
-5. **Add manual entries** for offline work
+5. **Add manual entries** for offline work, or use **Quick Distill** to paste conversations
 6. **Process with AI** at end of day
 7. **Download & Export** context update to PM agent
 
