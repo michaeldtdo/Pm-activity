@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BJJ Pose Previewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #canvas-container { width: 100%; height: 100%; }
+    </style>
+</head>
+<body class="bg-gray-900">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // ============================================
+        // PRESET POSE DATA
+        // ============================================
+        const PRESETS = {
+            standing: {
+                "Hips": { "x": 0, "y": 0, "z": 0 },
+                "Spine": { "x": 5, "y": 0, "z": 0 },
+                "Spine1": { "x": 5, "y": 0, "z": 0 },
+                "Spine2": { "x": 0, "y": 0, "z": 0 },
+                "Neck": { "x": -5, "y": 0, "z": 0 },
+                "Head": { "x": 0, "y": 0, "z": 0 },
+                "LeftShoulder": { "x": 0, "y": 0, "z": -5 },
+                "LeftArm": { "x": 0, "y": 0, "z": 45 },
+                "LeftForeArm": { "x": 0, "y": 0, "z": 30 },
+                "LeftHand": { "x": 0, "y": 0, "z": 0 },
+                "RightShoulder": { "x": 0, "y": 0, "z": 5 },
+                "RightArm": { "x": 0, "y": 0, "z": -45 },
+                "RightForeArm": { "x": 0, "y": 0, "z": -30 },
+                "RightHand": { "x": 0, "y": 0, "z": 0 },
+                "LeftUpLeg": { "x": 0, "y": 0, "z": 5 },
+                "LeftLeg": { "x": 10, "y": 0, "z": 0 },
+                "LeftFoot": { "x": -10, "y": 0, "z": 0 },
+                "RightUpLeg": { "x": 0, "y": 0, "z": -5 },
+                "RightLeg": { "x": 10, "y": 0, "z": 0 },
+                "RightFoot": { "x": -10, "y": 0, "z": 0 }
+            },
+            closedGuardBottom: {
+                "Hips": { "x": -85, "y": 0, "z": 0 },
+                "Spine": { "x": 5, "y": 0, "z": 0 },
+                "Spine1": { "x": 5, "y": 0, "z": 0 },
+                "Spine2": { "x": 5, "y": 0, "z": 0 },
+                "Neck": { "x": 30, "y": 0, "z": 0 },
+                "Head": { "x": 20, "y": 0, "z": 0 },
+                "LeftShoulder": { "x": 10, "y": 0, "z": -25 },
+                "LeftArm": { "x": 45, "y": 20, "z": 50 },
+                "LeftForeArm": { "x": 100, "y": 0, "z": 0 },
+                "LeftHand": { "x": 25, "y": 0, "z": -20 },
+                "RightShoulder": { "x": 10, "y": 0, "z": 25 },
+                "RightArm": { "x": 70, "y": -10, "z": -30 },
+                "RightForeArm": { "x": 80, "y": 0, "z": 0 },
+                "RightHand": { "x": 20, "y": 0, "z": 15 },
+                "LeftUpLeg": { "x": 120, "y": 0, "z": 35 },
+                "LeftLeg": { "x": -90, "y": 0, "z": 0 },
+                "LeftFoot": { "x": 40, "y": -20, "z": 0 },
+                "RightUpLeg": { "x": 120, "y": 0, "z": -35 },
+                "RightLeg": { "x": -90, "y": 0, "z": 0 },
+                "RightFoot": { "x": 40, "y": 20, "z": 0 }
+            },
+            closedGuardTop: {
+                "Hips": { "x": 0, "y": 180, "z": 0 },
+                "Spine": { "x": 40, "y": 0, "z": 0 },
+                "Spine1": { "x": 25, "y": 0, "z": 0 },
+                "Spine2": { "x": 15, "y": 0, "z": 0 },
+                "Neck": { "x": 20, "y": 0, "z": 0 },
+                "Head": { "x": 25, "y": 0, "z": 0 },
+                "LeftShoulder": { "x": 15, "y": 0, "z": -20 },
+                "LeftArm": { "x": 70, "y": 0, "z": 20 },
+                "LeftForeArm": { "x": 40, "y": 0, "z": 0 },
+                "LeftHand": { "x": 25, "y": 0, "z": 0 },
+                "RightShoulder": { "x": 15, "y": 0, "z": 20 },
+                "RightArm": { "x": 70, "y": 0, "z": -20 },
+                "RightForeArm": { "x": 40, "y": 0, "z": 0 },
+                "RightHand": { "x": 25, "y": 0, "z": 0 },
+                "LeftUpLeg": { "x": 90, "y": 0, "z": 15 },
+                "LeftLeg": { "x": -110, "y": 0, "z": 0 },
+                "LeftFoot": { "x": 15, "y": 0, "z": 0 },
+                "RightUpLeg": { "x": 90, "y": 0, "z": -15 },
+                "RightLeg": { "x": -110, "y": 0, "z": 0 },
+                "RightFoot": { "x": 15, "y": 0, "z": 0 }
+            }
+        };
+
+        const JOINT_NAMES = [
+            "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head",
+            "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand",
+            "RightShoulder", "RightArm", "RightForeArm", "RightHand",
+            "LeftUpLeg", "LeftLeg", "LeftFoot",
+            "RightUpLeg", "RightLeg", "RightFoot"
+        ];
+
+        // ============================================
+        // THREE.JS SCENE SETUP
+        // ============================================
+        class ThreeScene {
+            constructor(container) {
+                this.container = container;
+                this.figures = {};
+                this.init();
+            }
+
+            init() {
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x1a1a2e);
+
+                // Camera - three-quarter view from front-left, slightly elevated
+                this.camera = new THREE.PerspectiveCamera(
+                    50,
+                    container.clientWidth / container.clientHeight,
+                    0.1,
+                    1000
+                );
+                this.camera.position.set(4, 3, 5);
+                this.camera.lookAt(0, 1, 0);
+
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.shadowMap.enabled = true;
+                container.appendChild(this.renderer.domElement);
+
+                // Orbit Controls
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.target.set(0, 1, 0);
+                this.controls.update();
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                this.scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(5, 10, 5);
+                directionalLight.castShadow = true;
+                this.scene.add(directionalLight);
+
+                // Ground plane with grid
+                const gridHelper = new THREE.GridHelper(10, 20, 0x444444, 0x333333);
+                this.scene.add(gridHelper);
+
+                const groundGeometry = new THREE.PlaneGeometry(10, 10);
+                const groundMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x222222,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                ground.position.y = -0.01;
+                ground.receiveShadow = true;
+                this.scene.add(ground);
+
+                // Create figures
+                this.figures.you = this.createFigure(0x00bcd4, -1, 0); // Blue - You
+                this.figures.opponent = this.createFigure(0xff9800, 1, Math.PI); // Orange - Opponent
+
+                // Add labels
+                this.addLabel("You", -1, 2.5, 0, 0x00bcd4);
+                this.addLabel("Opponent", 1, 2.5, 0, 0xff9800);
+
+                // Handle resize
+                window.addEventListener('resize', () => this.onResize());
+
+                // Animation loop
+                this.animate();
+            }
+
+            addLabel(text, x, y, z, color) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+
+                context.fillStyle = '#' + color.toString(16).padStart(6, '0');
+                context.font = 'bold 32px Arial';
+                context.textAlign = 'center';
+                context.fillText(text, 128, 40);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.position.set(x, y, z);
+                sprite.scale.set(1, 0.25, 1);
+                this.scene.add(sprite);
+            }
+
+            // ============================================
+            // STICK FIGURE BUILDER
+            // ============================================
+            createFigure(color, xOffset, yRotation) {
+                const joints = {};
+                const material = new THREE.MeshStandardMaterial({ color });
+                const jointMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+                // Helper functions
+                const createJoint = (radius = 0.06) => {
+                    const geometry = new THREE.SphereGeometry(radius, 16, 16);
+                    return new THREE.Mesh(geometry, jointMaterial);
+                };
+
+                const createLimb = (length, radius = 0.03) => {
+                    const geometry = new THREE.CylinderGeometry(radius, radius, length, 8);
+                    geometry.translate(0, -length / 2, 0);
+                    return new THREE.Mesh(geometry, material);
+                };
+
+                // Build hierarchical structure
+                // Root - Hips
+                const hips = new THREE.Group();
+                hips.name = "Hips";
+                hips.position.set(xOffset, 1.0, 0);
+                hips.rotation.y = yRotation;
+                const hipsJoint = createJoint(0.1);
+                hips.add(hipsJoint);
+                joints.Hips = hips;
+
+                // Spine
+                const spine = new THREE.Group();
+                spine.name = "Spine";
+                spine.position.set(0, 0.1, 0);
+                const spineLimb = createLimb(0.15);
+                spineLimb.rotation.x = Math.PI;
+                spine.add(spineLimb);
+                spine.add(createJoint(0.05));
+                hips.add(spine);
+                joints.Spine = spine;
+
+                // Spine1
+                const spine1 = new THREE.Group();
+                spine1.name = "Spine1";
+                spine1.position.set(0, 0.15, 0);
+                const spine1Limb = createLimb(0.15);
+                spine1Limb.rotation.x = Math.PI;
+                spine1.add(spine1Limb);
+                spine1.add(createJoint(0.05));
+                spine.add(spine1);
+                joints.Spine1 = spine1;
+
+                // Spine2
+                const spine2 = new THREE.Group();
+                spine2.name = "Spine2";
+                spine2.position.set(0, 0.15, 0);
+                const spine2Limb = createLimb(0.15);
+                spine2Limb.rotation.x = Math.PI;
+                spine2.add(spine2Limb);
+                spine2.add(createJoint(0.07));
+                spine1.add(spine2);
+                joints.Spine2 = spine2;
+
+                // Neck
+                const neck = new THREE.Group();
+                neck.name = "Neck";
+                neck.position.set(0, 0.15, 0);
+                const neckLimb = createLimb(0.1);
+                neckLimb.rotation.x = Math.PI;
+                neck.add(neckLimb);
+                neck.add(createJoint(0.04));
+                spine2.add(neck);
+                joints.Neck = neck;
+
+                // Head
+                const head = new THREE.Group();
+                head.name = "Head";
+                head.position.set(0, 0.1, 0);
+                const headMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12, 16, 16),
+                    material
+                );
+                headMesh.position.y = 0.12;
+                head.add(headMesh);
+                neck.add(head);
+                joints.Head = head;
+
+                // Left Shoulder
+                const leftShoulder = new THREE.Group();
+                leftShoulder.name = "LeftShoulder";
+                leftShoulder.position.set(0.1, 0.12, 0);
+                const leftShoulderLimb = createLimb(0.1);
+                leftShoulderLimb.rotation.z = Math.PI / 2;
+                leftShoulder.add(leftShoulderLimb);
+                leftShoulder.add(createJoint(0.04));
+                spine2.add(leftShoulder);
+                joints.LeftShoulder = leftShoulder;
+
+                // Left Arm
+                const leftArm = new THREE.Group();
+                leftArm.name = "LeftArm";
+                leftArm.position.set(0.1, 0, 0);
+                const leftArmLimb = createLimb(0.25);
+                leftArm.add(leftArmLimb);
+                leftArm.add(createJoint(0.05));
+                leftShoulder.add(leftArm);
+                joints.LeftArm = leftArm;
+
+                // Left ForeArm
+                const leftForeArm = new THREE.Group();
+                leftForeArm.name = "LeftForeArm";
+                leftForeArm.position.set(0, -0.25, 0);
+                const leftForeArmLimb = createLimb(0.22);
+                leftForeArm.add(leftForeArmLimb);
+                leftForeArm.add(createJoint(0.04));
+                leftArm.add(leftForeArm);
+                joints.LeftForeArm = leftForeArm;
+
+                // Left Hand
+                const leftHand = new THREE.Group();
+                leftHand.name = "LeftHand";
+                leftHand.position.set(0, -0.22, 0);
+                const leftHandMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.06, 0.1, 0.03),
+                    material
+                );
+                leftHandMesh.position.y = -0.05;
+                leftHand.add(leftHandMesh);
+                leftForeArm.add(leftHand);
+                joints.LeftHand = leftHand;
+
+                // Right Shoulder
+                const rightShoulder = new THREE.Group();
+                rightShoulder.name = "RightShoulder";
+                rightShoulder.position.set(-0.1, 0.12, 0);
+                const rightShoulderLimb = createLimb(0.1);
+                rightShoulderLimb.rotation.z = -Math.PI / 2;
+                rightShoulder.add(rightShoulderLimb);
+                rightShoulder.add(createJoint(0.04));
+                spine2.add(rightShoulder);
+                joints.RightShoulder = rightShoulder;
+
+                // Right Arm
+                const rightArm = new THREE.Group();
+                rightArm.name = "RightArm";
+                rightArm.position.set(-0.1, 0, 0);
+                const rightArmLimb = createLimb(0.25);
+                rightArm.add(rightArmLimb);
+                rightArm.add(createJoint(0.05));
+                rightShoulder.add(rightArm);
+                joints.RightArm = rightArm;
+
+                // Right ForeArm
+                const rightForeArm = new THREE.Group();
+                rightForeArm.name = "RightForeArm";
+                rightForeArm.position.set(0, -0.25, 0);
+                const rightForeArmLimb = createLimb(0.22);
+                rightForeArm.add(rightForeArmLimb);
+                rightForeArm.add(createJoint(0.04));
+                rightArm.add(rightForeArm);
+                joints.RightForeArm = rightForeArm;
+
+                // Right Hand
+                const rightHand = new THREE.Group();
+                rightHand.name = "RightHand";
+                rightHand.position.set(0, -0.22, 0);
+                const rightHandMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.06, 0.1, 0.03),
+                    material
+                );
+                rightHandMesh.position.y = -0.05;
+                rightHand.add(rightHandMesh);
+                rightForeArm.add(rightHand);
+                joints.RightHand = rightHand;
+
+                // Left Up Leg
+                const leftUpLeg = new THREE.Group();
+                leftUpLeg.name = "LeftUpLeg";
+                leftUpLeg.position.set(0.1, -0.05, 0);
+                const leftUpLegLimb = createLimb(0.35);
+                leftUpLeg.add(leftUpLegLimb);
+                leftUpLeg.add(createJoint(0.06));
+                hips.add(leftUpLeg);
+                joints.LeftUpLeg = leftUpLeg;
+
+                // Left Leg
+                const leftLeg = new THREE.Group();
+                leftLeg.name = "LeftLeg";
+                leftLeg.position.set(0, -0.35, 0);
+                const leftLegLimb = createLimb(0.35);
+                leftLeg.add(leftLegLimb);
+                leftLeg.add(createJoint(0.05));
+                leftUpLeg.add(leftLeg);
+                joints.LeftLeg = leftLeg;
+
+                // Left Foot
+                const leftFoot = new THREE.Group();
+                leftFoot.name = "LeftFoot";
+                leftFoot.position.set(0, -0.35, 0);
+                const leftFootMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.08, 0.05, 0.15),
+                    material
+                );
+                leftFootMesh.position.set(0, -0.025, 0.04);
+                leftFoot.add(leftFootMesh);
+                leftLeg.add(leftFoot);
+                joints.LeftFoot = leftFoot;
+
+                // Right Up Leg
+                const rightUpLeg = new THREE.Group();
+                rightUpLeg.name = "RightUpLeg";
+                rightUpLeg.position.set(-0.1, -0.05, 0);
+                const rightUpLegLimb = createLimb(0.35);
+                rightUpLeg.add(rightUpLegLimb);
+                rightUpLeg.add(createJoint(0.06));
+                hips.add(rightUpLeg);
+                joints.RightUpLeg = rightUpLeg;
+
+                // Right Leg
+                const rightLeg = new THREE.Group();
+                rightLeg.name = "RightLeg";
+                rightLeg.position.set(0, -0.35, 0);
+                const rightLegLimb = createLimb(0.35);
+                rightLeg.add(rightLegLimb);
+                rightLeg.add(createJoint(0.05));
+                rightUpLeg.add(rightLeg);
+                joints.RightLeg = rightLeg;
+
+                // Right Foot
+                const rightFoot = new THREE.Group();
+                rightFoot.name = "RightFoot";
+                rightFoot.position.set(0, -0.35, 0);
+                const rightFootMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.08, 0.05, 0.15),
+                    material
+                );
+                rightFootMesh.position.set(0, -0.025, 0.04);
+                rightFoot.add(rightFootMesh);
+                rightLeg.add(rightFoot);
+                joints.RightFoot = rightFoot;
+
+                this.scene.add(hips);
+
+                return { root: hips, joints, xOffset, yRotation };
+            }
+
+            // ============================================
+            // POSE APPLICATION FUNCTION
+            // ============================================
+            applyPose(figureName, poseData) {
+                const figure = this.figures[figureName];
+                if (!figure) return;
+
+                const degToRad = (deg) => deg * Math.PI / 180;
+
+                for (const [jointName, rotation] of Object.entries(poseData)) {
+                    const joint = figure.joints[jointName];
+                    if (joint) {
+                        // For Hips, we need to handle the base rotation
+                        if (jointName === 'Hips') {
+                            joint.rotation.set(
+                                degToRad(rotation.x),
+                                degToRad(rotation.y) + figure.yRotation,
+                                degToRad(rotation.z)
+                            );
+                        } else {
+                            joint.rotation.set(
+                                degToRad(rotation.x),
+                                degToRad(rotation.y),
+                                degToRad(rotation.z)
+                            );
+                        }
+                    }
+                }
+            }
+
+            resetPose(figureName) {
+                const figure = this.figures[figureName];
+                if (!figure) return;
+
+                for (const [jointName, joint] of Object.entries(figure.joints)) {
+                    if (jointName === 'Hips') {
+                        joint.rotation.set(0, figure.yRotation, 0);
+                    } else {
+                        joint.rotation.set(0, 0, 0);
+                    }
+                }
+            }
+
+            getJointRotation(figureName, jointName) {
+                const figure = this.figures[figureName];
+                if (!figure || !figure.joints[jointName]) return { x: 0, y: 0, z: 0 };
+
+                const joint = figure.joints[jointName];
+                const radToDeg = (rad) => Math.round(rad * 180 / Math.PI);
+
+                if (jointName === 'Hips') {
+                    return {
+                        x: radToDeg(joint.rotation.x),
+                        y: radToDeg(joint.rotation.y - figure.yRotation),
+                        z: radToDeg(joint.rotation.z)
+                    };
+                }
+
+                return {
+                    x: radToDeg(joint.rotation.x),
+                    y: radToDeg(joint.rotation.y),
+                    z: radToDeg(joint.rotation.z)
+                };
+            }
+
+            setJointRotation(figureName, jointName, axis, value) {
+                const figure = this.figures[figureName];
+                if (!figure || !figure.joints[jointName]) return;
+
+                const joint = figure.joints[jointName];
+                const degToRad = (deg) => deg * Math.PI / 180;
+
+                if (jointName === 'Hips' && axis === 'y') {
+                    joint.rotation[axis] = degToRad(value) + figure.yRotation;
+                } else {
+                    joint.rotation[axis] = degToRad(value);
+                }
+            }
+
+            takeScreenshot() {
+                this.renderer.render(this.scene, this.camera);
+                const dataURL = this.renderer.domElement.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'bjj-pose-screenshot.png';
+                link.href = dataURL;
+                link.click();
+            }
+
+            onResize() {
+                const width = this.container.clientWidth;
+                const height = this.container.clientHeight;
+                this.camera.aspect = width / height;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(width, height);
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // ============================================
+        // REACT COMPONENTS
+        // ============================================
+        const { useState, useEffect, useRef } = React;
+
+        function App() {
+            const canvasRef = useRef(null);
+            const sceneRef = useRef(null);
+            const [selectedFigure, setSelectedFigure] = useState('you');
+            const [poseJson, setPoseJson] = useState('');
+            const [selectedJoint, setSelectedJoint] = useState('');
+            const [jointRotation, setJointRotation] = useState({ x: 0, y: 0, z: 0 });
+            const [error, setError] = useState('');
+
+            useEffect(() => {
+                if (canvasRef.current && !sceneRef.current) {
+                    sceneRef.current = new ThreeScene(canvasRef.current);
+                }
+            }, []);
+
+            useEffect(() => {
+                if (sceneRef.current && selectedJoint) {
+                    const rotation = sceneRef.current.getJointRotation(selectedFigure, selectedJoint);
+                    setJointRotation(rotation);
+                }
+            }, [selectedJoint, selectedFigure]);
+
+            const handleApplyPose = () => {
+                setError('');
+                try {
+                    const pose = JSON.parse(poseJson);
+                    sceneRef.current.applyPose(selectedFigure, pose);
+                } catch (e) {
+                    setError('Invalid JSON: ' + e.message);
+                }
+            };
+
+            const handleReset = () => {
+                sceneRef.current.resetPose(selectedFigure);
+                if (selectedJoint) {
+                    setJointRotation({ x: 0, y: 0, z: 0 });
+                }
+            };
+
+            const handlePreset = (presetName, figure = selectedFigure) => {
+                const preset = PRESETS[presetName];
+                if (preset) {
+                    sceneRef.current.applyPose(figure, preset);
+                    setPoseJson(JSON.stringify(preset, null, 2));
+                }
+            };
+
+            const handleClosedGuard = () => {
+                sceneRef.current.applyPose('you', PRESETS.closedGuardBottom);
+                sceneRef.current.applyPose('opponent', PRESETS.closedGuardTop);
+                setPoseJson(JSON.stringify(PRESETS.closedGuardBottom, null, 2));
+            };
+
+            const handleMount = () => {
+                // Mount position - You on top, Opponent on bottom
+                const mountTop = {
+                    "Hips": { "x": -15, "y": 0, "z": 0 },
+                    "Spine": { "x": 30, "y": 0, "z": 0 },
+                    "Spine1": { "x": 20, "y": 0, "z": 0 },
+                    "Spine2": { "x": 10, "y": 0, "z": 0 },
+                    "Neck": { "x": 15, "y": 0, "z": 0 },
+                    "Head": { "x": 20, "y": 0, "z": 0 },
+                    "LeftShoulder": { "x": 0, "y": 0, "z": -10 },
+                    "LeftArm": { "x": 60, "y": 0, "z": 30 },
+                    "LeftForeArm": { "x": 60, "y": 0, "z": 0 },
+                    "LeftHand": { "x": 0, "y": 0, "z": 0 },
+                    "RightShoulder": { "x": 0, "y": 0, "z": 10 },
+                    "RightArm": { "x": 60, "y": 0, "z": -30 },
+                    "RightForeArm": { "x": 60, "y": 0, "z": 0 },
+                    "RightHand": { "x": 0, "y": 0, "z": 0 },
+                    "LeftUpLeg": { "x": 70, "y": 0, "z": 50 },
+                    "LeftLeg": { "x": -100, "y": 0, "z": 0 },
+                    "LeftFoot": { "x": 0, "y": 0, "z": 0 },
+                    "RightUpLeg": { "x": 70, "y": 0, "z": -50 },
+                    "RightLeg": { "x": -100, "y": 0, "z": 0 },
+                    "RightFoot": { "x": 0, "y": 0, "z": 0 }
+                };
+                const mountBottom = {
+                    "Hips": { "x": -85, "y": 180, "z": 0 },
+                    "Spine": { "x": 5, "y": 0, "z": 0 },
+                    "Spine1": { "x": 5, "y": 0, "z": 0 },
+                    "Spine2": { "x": 0, "y": 0, "z": 0 },
+                    "Neck": { "x": 25, "y": 0, "z": 0 },
+                    "Head": { "x": 15, "y": 0, "z": 0 },
+                    "LeftShoulder": { "x": 0, "y": 0, "z": -20 },
+                    "LeftArm": { "x": 30, "y": 0, "z": 70 },
+                    "LeftForeArm": { "x": 90, "y": 0, "z": 0 },
+                    "LeftHand": { "x": 0, "y": 0, "z": 0 },
+                    "RightShoulder": { "x": 0, "y": 0, "z": 20 },
+                    "RightArm": { "x": 30, "y": 0, "z": -70 },
+                    "RightForeArm": { "x": 90, "y": 0, "z": 0 },
+                    "RightHand": { "x": 0, "y": 0, "z": 0 },
+                    "LeftUpLeg": { "x": 20, "y": 0, "z": 15 },
+                    "LeftLeg": { "x": -40, "y": 0, "z": 0 },
+                    "LeftFoot": { "x": 0, "y": 0, "z": 0 },
+                    "RightUpLeg": { "x": 20, "y": 0, "z": -15 },
+                    "RightLeg": { "x": -40, "y": 0, "z": 0 },
+                    "RightFoot": { "x": 0, "y": 0, "z": 0 }
+                };
+                sceneRef.current.applyPose('you', mountTop);
+                sceneRef.current.applyPose('opponent', mountBottom);
+                setPoseJson(JSON.stringify(mountTop, null, 2));
+            };
+
+            const handleJointChange = (axis, value) => {
+                const numValue = parseFloat(value) || 0;
+                const newRotation = { ...jointRotation, [axis]: numValue };
+                setJointRotation(newRotation);
+                if (sceneRef.current && selectedJoint) {
+                    sceneRef.current.setJointRotation(selectedFigure, selectedJoint, axis, numValue);
+                }
+            };
+
+            const handleScreenshot = () => {
+                if (sceneRef.current) {
+                    sceneRef.current.takeScreenshot();
+                }
+            };
+
+            return (
+                <div className="flex h-screen w-screen">
+                    {/* Three.js Canvas */}
+                    <div
+                        ref={canvasRef}
+                        id="canvas-container"
+                        className="w-3/5 h-full"
+                    />
+
+                    {/* Controls Panel */}
+                    <div className="w-2/5 h-full bg-gray-800 p-6 overflow-y-auto">
+                        <h1 className="text-2xl font-bold text-cyan-400 mb-6 border-b border-gray-600 pb-4">
+                            POSE PREVIEWER
+                        </h1>
+
+                        {/* Figure Selection */}
+                        <div className="mb-6">
+                            <label className="block text-gray-300 mb-2">Figure:</label>
+                            <select
+                                value={selectedFigure}
+                                onChange={(e) => setSelectedFigure(e.target.value)}
+                                className="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-400 focus:outline-none"
+                            >
+                                <option value="you">You (Blue)</option>
+                                <option value="opponent">Opponent (Orange)</option>
+                            </select>
+                        </div>
+
+                        {/* Pose JSON Input */}
+                        <div className="mb-6">
+                            <label className="block text-gray-300 mb-2">Paste pose JSON:</label>
+                            <textarea
+                                value={poseJson}
+                                onChange={(e) => setPoseJson(e.target.value)}
+                                className="w-full h-48 bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-400 focus:outline-none font-mono text-sm"
+                                placeholder='{"Hips": {"x": 0, "y": 0, "z": 0}, ...}'
+                            />
+                            {error && (
+                                <p className="text-red-400 text-sm mt-2">{error}</p>
+                            )}
+                        </div>
+
+                        {/* Apply/Reset Buttons */}
+                        <div className="flex gap-4 mb-6">
+                            <button
+                                onClick={handleApplyPose}
+                                className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded transition-colors"
+                            >
+                                Apply Pose
+                            </button>
+                            <button
+                                onClick={handleReset}
+                                className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded transition-colors"
+                            >
+                                Reset
+                            </button>
+                        </div>
+
+                        {/* Presets */}
+                        <div className="mb-6 border-t border-gray-600 pt-6">
+                            <label className="block text-gray-300 mb-3">Presets:</label>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => {
+                                        handlePreset('standing', 'you');
+                                        handlePreset('standing', 'opponent');
+                                    }}
+                                    className="bg-gray-600 hover:bg-cyan-600 text-white py-2 px-4 rounded transition-colors"
+                                >
+                                    Standing
+                                </button>
+                                <button
+                                    onClick={handleClosedGuard}
+                                    className="bg-gray-600 hover:bg-cyan-600 text-white py-2 px-4 rounded transition-colors"
+                                >
+                                    Closed Guard
+                                </button>
+                                <button
+                                    onClick={handleMount}
+                                    className="bg-gray-600 hover:bg-cyan-600 text-white py-2 px-4 rounded transition-colors"
+                                >
+                                    Mount
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Quick Adjust */}
+                        <div className="mb-6 border-t border-gray-600 pt-6">
+                            <label className="block text-gray-300 mb-3">Quick Adjust:</label>
+                            <div className="mb-4">
+                                <label className="block text-gray-400 text-sm mb-1">Selected joint:</label>
+                                <select
+                                    value={selectedJoint}
+                                    onChange={(e) => setSelectedJoint(e.target.value)}
+                                    className="w-full bg-gray-700 text-white px-4 py-2 rounded border border-gray-600 focus:border-cyan-400 focus:outline-none"
+                                >
+                                    <option value="">None</option>
+                                    {JOINT_NAMES.map(name => (
+                                        <option key={name} value={name}>{name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {selectedJoint && (
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="block text-gray-400 text-sm mb-1">X:</label>
+                                        <input
+                                            type="number"
+                                            value={jointRotation.x}
+                                            onChange={(e) => handleJointChange('x', e.target.value)}
+                                            className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-cyan-400 focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 text-sm mb-1">Y:</label>
+                                        <input
+                                            type="number"
+                                            value={jointRotation.y}
+                                            onChange={(e) => handleJointChange('y', e.target.value)}
+                                            className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-cyan-400 focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-gray-400 text-sm mb-1">Z:</label>
+                                        <input
+                                            type="number"
+                                            value={jointRotation.z}
+                                            onChange={(e) => handleJointChange('z', e.target.value)}
+                                            className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-cyan-400 focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Screenshot */}
+                        <div className="border-t border-gray-600 pt-6">
+                            <button
+                                onClick={handleScreenshot}
+                                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded transition-colors"
+                            >
+                                Screenshot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================
+        // RENDER
+        // ============================================
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
